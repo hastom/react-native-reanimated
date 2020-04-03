@@ -35,7 +35,10 @@ bool Applier::apply(jsi::Runtime &rt, std::shared_ptr<BaseWorkletModule> module)
     }
     sharedValues.push_back(sv);
   }
-  
+
+  if (this->errorHandler->getError() != nullptr && this->errorHandler->getError()->handled) {
+    shouldFinish = true;
+  }
   if (!shouldFinish) {
     jsi::Value * args = new jsi::Value[sharedValues.size()];
     for (int i = 0; i < sharedValues.size(); ++i) {
@@ -51,9 +54,6 @@ bool Applier::apply(jsi::Runtime &rt, std::shared_ptr<BaseWorkletModule> module)
                               static_cast<const jsi::Value*>(args),
                               (size_t)sharedValues.size());
     shouldFinish = (returnValue.isBool()) ? returnValue.getBool() : false;
-    if (this->errorHandler->getError() != nullptr && this->errorHandler->getError()->handled) {
-      shouldFinish = true;
-    }
     delete [] args;
   }
 
