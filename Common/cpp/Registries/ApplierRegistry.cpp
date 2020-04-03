@@ -7,8 +7,11 @@
 
 int ApplierRegistry::New_Applier_Id = INT_MAX;
 
-ApplierRegistry::ApplierRegistry(std::shared_ptr<MapperRegistry> mapperRegistry) {
+ApplierRegistry::ApplierRegistry(
+    std::shared_ptr<MapperRegistry> mapperRegistry,
+    std::shared_ptr<ErrorHandler> errorHandler) {
   this->mapperRegistry = mapperRegistry;
+  this->errorHandler = errorHandler;
 }
 
 void ApplierRegistry::registerApplierForRender(int id, std::shared_ptr<Applier> applier) {
@@ -62,6 +65,9 @@ void ApplierRegistry::evaluateAppliers(
 }
 
 void ApplierRegistry::render(jsi::Runtime &rt, std::shared_ptr<BaseWorkletModule> module) {
+  if (this->errorHandler->getError() != nullptr) {
+    return;
+  }
   evaluateAppliers(rt,
                    module,
                    renderAppliers,
@@ -71,6 +77,9 @@ void ApplierRegistry::render(jsi::Runtime &rt, std::shared_ptr<BaseWorkletModule
 }
 
 void ApplierRegistry::event(jsi::Runtime &rt, std::string eventName, std::shared_ptr<BaseWorkletModule> module) {
+  if (this->errorHandler->getError() != nullptr) {
+    return;
+  }
   evaluateAppliers(rt,
                    module,
                    eventAppliers[eventName],
